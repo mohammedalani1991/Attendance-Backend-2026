@@ -1,0 +1,61 @@
+@model IEnumerable<AttendanceWeb.Models.Domain.Student>
+@{
+    ViewData["Title"] = "Students";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Students</h2>
+        <div>
+            <a asp-action="UploadStudents" class="btn btn-primary">Upload Students (Excel)</a>
+            <a asp-action="UploadUnpaidStudents" class="btn btn-warning">Upload Unpaid List</a>
+            <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <p class="text-muted text-center py-4">No students yet. Upload an Excel file to get started.</p>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <strong>Total Students:</strong> @Model.Count()
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Full Name</th>
+                                <th>Stage</th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model)
+                            {
+                                <tr>
+                                    <td><code>@student.StudentId</code></td>
+                                    <td>@student.FullName</td>
+                                    <td><span class="badge bg-info">@student.Stage.Name</span></td>
+                                    <td>@student.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

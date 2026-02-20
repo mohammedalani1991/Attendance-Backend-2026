@@ -1,0 +1,184 @@
+@model AttendanceWeb.Models.Domain.Department
+@{
+    ViewData["Title"] = "Department Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@Model.Name (@Model.Code)</h2>
+        <div>
+            <a asp-action="Students" class="btn btn-outline-primary">Manage Students</a>
+            <a asp-action="AttendanceReports" class="btn btn-outline-info">Attendance Reports</a>
+            <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
+                <button type="submit" class="btn btn-outline-secondary">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stages and Courses -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Stages & Courses</h5>
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createStageModal">
+                Add Stage
+            </button>
+        </div>
+        <div class="card-body">
+            @if (!Model.Stages.Any())
+            {
+                <p class="text-muted">No stages yet. Create one to get started.</p>
+            }
+            else
+            {
+                @foreach (var stage in Model.Stages.OrderBy(s => s.Year))
+                {
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">@stage.Name (Year @stage.Year)</h6>
+                                <div>
+                                    <a asp-action="CreateCourse" asp-route-stageId="@stage.Id" class="btn btn-sm btn-outline-primary">Add Course</a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteStageModal-@stage.Id">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if (!stage.Courses.Any())
+                            {
+                                <p class="text-muted mb-0">No courses in this stage.</p>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Course Name</th>
+                                                <th>Code</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var course in stage.Courses)
+                                            {
+                                                <tr>
+                                                    <td>@course.Name</td>
+                                                    <td><span class="badge bg-secondary">@course.Code</span></td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordModal-@course.Id">Reset Password</button>
+                                                        <form asp-action="DeleteCourse" asp-route-id="@course.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this course?');">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- Reset Password Modal -->
+                                                <div class="modal fade" id="resetPasswordModal-@course.Id" tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <form asp-action="ResetLecturerPassword" asp-route-courseId="@course.Id" method="post">
+                                                                @Html.AntiForgeryToken()
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Reset Lecturer Password - @course.Name</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">New Password</label>
+                                                                        <input type="password" name="newPassword" class="form-control" required minlength="4" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                    <button type="submit" class="btn btn-warning">Reset Password</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Delete Stage Modal -->
+                    <div class="modal fade" id="deleteStageModal-@stage.Id" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Delete</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Delete stage <strong>@stage.Name</strong>? This will delete all courses and students in this stage.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <form asp-action="DeleteStage" asp-route-id="@stage.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Create Stage Modal -->
+    <div class="modal fade" id="createStageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="CreateStage" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create Stage</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Stage Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g., Stage 1" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Year</label>
+                            <select name="year" class="form-select" required>
+                                <option value="">Select year...</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Stage</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+@model AttendanceWeb.Models.ViewModels.CreateCourseViewModel
+@{
+    ViewData["Title"] = "Create Course";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Create Course - @Model.StageName</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateCourse" method="post">
+                        <input type="hidden" asp-for="StageId" />
+                        <input type="hidden" asp-for="StageName" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <h6 class="mb-3">Course Information</h6>
+
+                        <div class="mb-3">
+                            <label asp-for="CourseName" class="form-label"></label>
+                            <input asp-for="CourseName" class="form-control" placeholder="e.g., Database Systems" />
+                            <span asp-validation-for="CourseName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CourseCode" class="form-label"></label>
+                            <input asp-for="CourseCode" class="form-control" placeholder="e.g., CS301" />
+                            <span asp-validation-for="CourseCode" class="text-danger"></span>
+                        </div>
+
+                        <hr class="my-4" />
+                        <h6 class="mb-3">Lecturer Credentials</h6>
+
+                        <div class="mb-3">
+                            <label asp-for="LecturerUsername" class="form-label"></label>
+                            <input asp-for="LecturerUsername" class="form-control" placeholder="e.g., dr_john" />
+                            <span asp-validation-for="LecturerUsername" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LecturerPassword" class="form-label"></label>
+                            <input asp-for="LecturerPassword" class="form-control" />
+                            <span asp-validation-for="LecturerPassword" class="text-danger"></span>
+                            <small class="form-text text-muted">Minimum 6 characters</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Course</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

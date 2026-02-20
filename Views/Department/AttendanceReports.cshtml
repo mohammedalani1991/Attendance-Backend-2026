@@ -1,0 +1,156 @@
+@model IEnumerable<AttendanceWeb.Models.Domain.AttendanceSession>
+@{
+    ViewData["Title"] = "Attendance Reports";
+    var courses = ViewBag.Courses as List<AttendanceWeb.Models.Domain.Course>;
+    var selectedCourseId = ViewBag.SelectedCourseId as int?;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Attendance Reports</h2>
+        <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="AttendanceReports">
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label">Select Course</label>
+                        <select name="courseId" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Select a course --</option>
+                            @if (courses != null)
+                            {
+                                var groupedCourses = courses.GroupBy(c => c.Stage.Name);
+                                foreach (var group in groupedCourses)
+                                {
+                                    <optgroup label="@group.Key">
+                                        @foreach (var course in group)
+                                        {
+                                            <option value="@course.Id" selected="@(selectedCourseId == course.Id)">
+                                                @course.Name (@course.Code)
+                                            </option>
+                                        }
+                                    </optgroup>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">View Reports</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (selectedCourseId.HasValue)
+    {
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                No attendance sessions found for this course yet.
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Attendance Sessions</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var session in Model)
+                    {
+                        var totalStudents = session.AttendanceRecords.Count;
+                        var presentCount = session.AttendanceRecords.Count(r => r.IsPresent);
+                        var absentCount = totalStudents - presentCount;
+                        var unpaidCount = session.AttendanceRecords.Count(r => r.IsUnpaid);
+                        var attendancePercentage = totalStudents > 0 ? (presentCount * 100.0 / totalStudents) : 0;
+
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@session.SessionDate.ToLocalTime().ToString("MMMM dd, yyyy")</strong>
+                                        <span class="text-muted ms-2">
+                                            @session.StartedAt.ToLocalTime().ToString("hh:mm tt") - @session.EndedAt?.ToLocalTime().ToString("hh:mm tt")
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-@(attendancePercentage >= 75 ? "success" : attendancePercentage >= 50 ? "warning" : "danger")">
+                                            @attendancePercentage.ToString("F1")% Attendance
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <strong>Total Students:</strong> @totalStudents
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong class="text-success">Present:</strong> @presentCount
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong class="text-danger">Absent:</strong> @absentCount
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong class="text-warning">Unpaid:</strong> @unpaidCount
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#session-@session.Id">
+                                    View Details
+                                </button>
+
+                                <div class="collapse mt-3" id="session-@session.Id">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student ID</th>
+                                                    <th>Status</th>
+                                                    <th>Scanned At</th>
+                                                    <th>Payment Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var record in session.AttendanceRecords.OrderBy(r => !r.IsPresent).ThenBy(r => r.StudentId))
+                                                {
+                                                    <tr class="@(record.IsUnpaid ? "table-warning" : "")">
+                                                        <td><code>@record.StudentId</code></td>
+                                                        <td>
+                                                            @if (record.IsPresent)
+                                                            {
+                                                                <span class="badge bg-success">Present</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-danger">Absent</span>
+                                                            }
+                                                        </td>
+                                                        <td>@record.ScannedAt.ToLocalTime().ToString("hh:mm:ss tt")</td>
+                                                        <td>
+                                                            @if (record.IsUnpaid)
+                                                            {
+                                                                <span class="badge bg-warning text-dark">Unpaid</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-success">Paid</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

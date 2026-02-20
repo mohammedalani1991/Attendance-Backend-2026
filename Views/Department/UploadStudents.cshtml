@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Upload Students";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Upload Students (Excel)</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6>Excel File Format:</h6>
+                        <p class="mb-2">Your Excel file should have the following columns (with headers):</p>
+                        <ol class="mb-0">
+                            <li><strong>StudentId</strong> - Numeric student ID (e.g., 12345678)</li>
+                            <li><strong>FullName</strong> - Student's full name</li>
+                            <li><strong>Stage</strong> - Stage year number (1, 2, 3, or 4)</li>
+                        </ol>
+                        <p class="mt-2 mb-0"><small>Note: Stages must be created before uploading students.</small></p>
+                    </div>
+
+                    <form asp-action="UploadStudents" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Select Excel File (.xlsx)</label>
+                            <input type="file" name="file" class="form-control" accept=".xlsx" required />
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Students" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Upload Students</button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6>Example Excel Data:</h6>
+                            <table class="table table-sm table-bordered bg-white mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>StudentId</th>
+                                        <th>FullName</th>
+                                        <th>Stage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>12345678</td>
+                                        <td>John Doe</td>
+                                        <td>1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>87654321</td>
+                                        <td>Jane Smith</td>
+                                        <td>2</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
