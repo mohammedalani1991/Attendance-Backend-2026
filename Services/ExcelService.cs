@@ -60,11 +60,6 @@ public class ExcelService
                 throw new Exception($"Row {row}: All fields (StudentId, FullName, Stage) are required.");
             }
 
-            // Validate numeric student ID
-            if (!studentId.All(char.IsDigit))
-            {
-                throw new Exception($"Row {row}: Student ID '{studentId}' must contain only numbers.");
-            }
 
             // Check if student ID already exists
             if (await _context.Students.AnyAsync(s => s.StudentId == studentId))
@@ -126,11 +121,6 @@ public class ExcelService
                 continue; // Skip empty rows
             }
 
-            // Validate numeric student ID
-            if (!studentId.All(char.IsDigit))
-            {
-                throw new Exception($"Row {row}: Student ID '{studentId}' must contain only numbers.");
-            }
 
             // Verify student exists
             if (!await _context.Students.AnyAsync(s => s.StudentId == studentId && s.DepartmentId == departmentId))
